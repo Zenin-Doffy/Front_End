@@ -126,7 +126,6 @@
     </div>
   </div>
   <script>
-    var x = 1;
     const API_BASE = 'https://backend-aba7.onrender.com';
     
     new Vue({
@@ -191,8 +190,12 @@
             const limit = 100; // assuming a maximum of 100 lessons
             const res = await fetch(`${API_BASE}/lessons?page=${page}&limit=${limit}`);
             let data = await res.json();
-            // Save initialSpaces for each lesson
-            this.lessons = data.map(lesson => ({ ...lesson, initialSpaces: lesson.spaces }));
+            // Convert _id to string and save initialSpaces
+            this.lessons = data.map(lesson => ({
+              ...lesson,
+              _id: lesson._id.toString(),
+              initialSpaces: lesson.spaces
+            }));
           } catch (err) {
             this.orderError = 'Failed to load lessons';
           } finally {
@@ -214,8 +217,12 @@
           try {
             const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(this.searchQuery)}`);
             let data = await res.json();
-            // Ensure initialSpaces is stored for cart space calculations
-            this.lessons = data.map(lesson => ({ ...lesson, initialSpaces: lesson.spaces }));
+            // Convert _id to string and store initialSpaces
+            this.lessons = data.map(lesson => ({
+              ...lesson,
+              _id: lesson._id.toString(),
+              initialSpaces: lesson.spaces
+            }));
           } catch (err) {
             this.orderError = 'Search failed';
           }
@@ -226,7 +233,7 @@
         },
         // Add lesson to cart and update available spaces via PUT request
         async addToCart(lesson) {
-          const cartItem = this.cart.find(item => item._id.toString() === lesson._id.toString());
+          const cartItem = this.cart.find(item => item._id === lesson._id);
           if (lesson.spaces > 0) {
             if (cartItem) {
               if (cartItem.quantity < lesson.initialSpaces) {
@@ -244,38 +251,40 @@
                 body: JSON.stringify({ spaces: lesson.spaces - 1 })
               });
               const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id.toString() === lesson._id.toString() ? { ...updatedLesson, initialSpaces: l.initialSpaces } : l);
+              this.lessons = this.lessons.map(l => l._id === lesson._id ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
             } catch (err) {
               this.orderError = 'Failed to add to cart';
             }
           }
         },
         updateLessonSpaces(lessonId) {
-          const lesson = this.lessons.find(l => l._id.toString() === lessonId.toString());
+          // Ensure lessonId is a string
+          lessonId = lessonId.toString();
+          const lesson = this.lessons.find(l => l._id === lessonId);
           if (lesson) {
             const qtyInCart = this.cart
-              .filter(item => item._id.toString() === lessonId.toString())
+              .filter(item => item._id === lessonId)
               .reduce((acc, curr) => acc + curr.quantity, 0);
             lesson.spaces = lesson.initialSpaces - qtyInCart;
           }
         },
         async incrementCartItem(productId) {
-          const productIdStr = productId.toString();
-          const cartItem = this.cart.find(item => item._id.toString() === productIdStr);
+          const idStr = productId.toString();
+          const cartItem = this.cart.find(item => item._id === idStr);
           if (!cartItem) return;
-          const lesson = this.lessons.find(l => l._id.toString() === productIdStr);
+          const lesson = this.lessons.find(l => l._id === idStr);
           if (!lesson) return;
           if (cartItem.quantity < lesson.initialSpaces && lesson.spaces > 0) {
             try {
-              const res = await fetch(`${API_BASE}/lessons/${productId}`, {
+              const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ spaces: lesson.spaces - 1 })
               });
               const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id.toString() === productIdStr ? { ...updatedLesson, initialSpaces: l.initialSpaces } : l);
+              this.lessons = this.lessons.map(l => l._id === idStr ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
               cartItem.quantity++;
-              this.updateLessonSpaces(productId);
+              this.updateLessonSpaces(idStr);
               this.saveCart();
             } catch (err) {
               this.orderError = 'Failed to add more to cart';
@@ -283,34 +292,34 @@
           }
         },
         async decrementCartItem(productId) {
-          const productIdStr = productId.toString();
-          const cartItem = this.cart.find(item => item._id.toString() === productIdStr);
+          const idStr = productId.toString();
+          const cartItem = this.cart.find(item => item._id === idStr);
           if (!cartItem) return;
-          const lesson = this.lessons.find(l => l._id.toString() === productIdStr);
+          const lesson = this.lessons.find(l => l._id === idStr);
           if (!lesson) return;
           if (cartItem.quantity > 1) {
             try {
-              const res = await fetch(`${API_BASE}/lessons/${productId}`, {
+              const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ spaces: lesson.spaces + 1 })
               });
               const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id.toString() === productIdStr ? { ...updatedLesson, initialSpaces: l.initialSpaces } : l);
+              this.lessons = this.lessons.map(l => l._id === idStr ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
               cartItem.quantity--;
-              this.updateLessonSpaces(productId);
+              this.updateLessonSpaces(idStr);
               this.saveCart();
             } catch (err) {
               this.orderError = 'Failed to update cart';
             }
           } else {
-            this.removeCartItem(this.cart.findIndex(item => item._id.toString() === productIdStr));
+            this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
           }
         },
         async removeCartItem(index) {
           const cartItem = this.cart[index];
           const idStr = cartItem._id.toString();
-          const lesson = this.lessons.find(l => l._id.toString() === idStr);
+          const lesson = this.lessons.find(l => l._id === idStr);
           if (lesson) {
             try {
               const newSpaces = lesson.spaces + cartItem.quantity;
@@ -320,7 +329,7 @@
                 body: JSON.stringify({ spaces: newSpaces })
               });
               const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id.toString() === idStr ? { ...updatedLesson, initialSpaces: l.initialSpaces } : l);
+              this.lessons = this.lessons.map(l => l._id === idStr ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
             } catch (err) {
               this.orderError = 'Failed to update lesson on removal';
             }
@@ -349,7 +358,7 @@
           this.submitting = true;
           try {
             const orderItems = this.cart.map(item => ({
-              lessonId: item._id,
+              lessonId: item._id.toString(), // ensure ID is a string
               quantity: item.quantity
             }));
             const res = await fetch(`${API_BASE}/orders`, {
