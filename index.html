@@ -183,18 +183,17 @@
           event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
           event.target.style.display = 'none';
         },
-        // Fetch lessons using GET /lessons with pagination (optional: page & limit)
+        // Fetch lessons using GET /lessons with pagination
         async fetchLessons() {
           try {
             const page = 1;
             const limit = 100; // assuming a maximum of 100 lessons
             const res = await fetch(`${API_BASE}/lessons?page=${page}&limit=${limit}`);
             let data = await res.json();
-            // Convert _id to string and save initialSpaces
+            // Convert _id to string
             this.lessons = data.map(lesson => ({
               ...lesson,
-              _id: lesson._id.toString(),
-              initialSpaces: lesson.spaces
+              _id: lesson._id.toString()
             }));
           } catch (err) {
             this.orderError = 'Failed to load lessons';
@@ -217,11 +216,9 @@
           try {
             const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(this.searchQuery)}`);
             let data = await res.json();
-            // Convert _id to string and store initialSpaces
             this.lessons = data.map(lesson => ({
               ...lesson,
-              _id: lesson._id.toString(),
-              initialSpaces: lesson.spaces
+              _id: lesson._id.toString()
             }));
           } catch (err) {
             this.orderError = 'Search failed';
@@ -231,66 +228,55 @@
           this.searchQuery = '';
           this.fetchLessons();
         },
-        // Add lesson to cart and update available spaces via PUT request
+        // Add lesson to cart: update local state and send PUT request to update lesson spaces
         async addToCart(lesson) {
           const cartItem = this.cart.find(item => item._id === lesson._id);
           if (lesson.spaces > 0) {
             if (cartItem) {
-              if (cartItem.quantity < lesson.initialSpaces) {
-                cartItem.quantity++;
-              }
+              cartItem.quantity++;
             } else {
               this.cart.push({ ...lesson, quantity: 1 });
             }
-            this.updateLessonSpaces(lesson._id);
+            // Immediately reduce available spaces locally
+            lesson.spaces--;
             this.saveCart();
             try {
               const res = await fetch(`${API_BASE}/lessons/${lesson._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ spaces: lesson.spaces - 1 })
+                body: JSON.stringify({ spaces: lesson.spaces })
               });
               const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id === lesson._id ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
+              Object.assign(lesson, updatedLesson);
             } catch (err) {
               this.orderError = 'Failed to add to cart';
             }
           }
         },
-        updateLessonSpaces(lessonId) {
-          // Ensure lessonId is a string
-          lessonId = lessonId.toString();
-          const lesson = this.lessons.find(l => l._id === lessonId);
-          if (lesson) {
-            const qtyInCart = this.cart
-              .filter(item => item._id === lessonId)
-              .reduce((acc, curr) => acc + curr.quantity, 0);
-            lesson.spaces = lesson.initialSpaces - qtyInCart;
-          }
-        },
+        // Increment cart item: update local cart quantity and lesson spaces
         async incrementCartItem(productId) {
           const idStr = productId.toString();
           const cartItem = this.cart.find(item => item._id === idStr);
           if (!cartItem) return;
           const lesson = this.lessons.find(l => l._id === idStr);
           if (!lesson) return;
-          if (cartItem.quantity < lesson.initialSpaces && lesson.spaces > 0) {
-            try {
-              const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ spaces: lesson.spaces - 1 })
-              });
-              const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id === idStr ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
-              cartItem.quantity++;
-              this.updateLessonSpaces(idStr);
-              this.saveCart();
-            } catch (err) {
-              this.orderError = 'Failed to add more to cart';
-            }
+          if (lesson.spaces <= 0) return; // no more spaces available
+          cartItem.quantity++;
+          lesson.spaces--;
+          this.saveCart();
+          try {
+            const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ spaces: lesson.spaces })
+            });
+            const updatedLesson = await res.json();
+            Object.assign(lesson, updatedLesson);
+          } catch (err) {
+            this.orderError = 'Failed to update cart on increment';
           }
         },
+        // Decrement cart item: update local cart quantity and lesson spaces
         async decrementCartItem(productId) {
           const idStr = productId.toString();
           const cartItem = this.cart.find(item => item._id === idStr);
@@ -298,38 +284,39 @@
           const lesson = this.lessons.find(l => l._id === idStr);
           if (!lesson) return;
           if (cartItem.quantity > 1) {
+            cartItem.quantity--;
+            lesson.spaces++;
+            this.saveCart();
             try {
               const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ spaces: lesson.spaces + 1 })
+                body: JSON.stringify({ spaces: lesson.spaces })
               });
               const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id === idStr ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
-              cartItem.quantity--;
-              this.updateLessonSpaces(idStr);
-              this.saveCart();
+              Object.assign(lesson, updatedLesson);
             } catch (err) {
-              this.orderError = 'Failed to update cart';
+              this.orderError = 'Failed to update cart on decrement';
             }
           } else {
             this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
           }
         },
+        // Remove cart item: update lesson spaces and remove item from cart
         async removeCartItem(index) {
           const cartItem = this.cart[index];
           const idStr = cartItem._id.toString();
           const lesson = this.lessons.find(l => l._id === idStr);
           if (lesson) {
+            lesson.spaces += cartItem.quantity;
             try {
-              const newSpaces = lesson.spaces + cartItem.quantity;
               const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ spaces: newSpaces })
+                body: JSON.stringify({ spaces: lesson.spaces })
               });
               const updatedLesson = await res.json();
-              this.lessons = this.lessons.map(l => l._id === idStr ? { ...updatedLesson, initialSpaces: l.initialSpaces, _id: updatedLesson._id.toString() } : l);
+              Object.assign(lesson, updatedLesson);
             } catch (err) {
               this.orderError = 'Failed to update lesson on removal';
             }
@@ -358,7 +345,7 @@
           this.submitting = true;
           try {
             const orderItems = this.cart.map(item => ({
-              lessonId: item._id.toString(), // ensure ID is a string
+              lessonId: item._id.toString(),
               quantity: item.quantity
             }));
             const res = await fetch(`${API_BASE}/orders`, {
