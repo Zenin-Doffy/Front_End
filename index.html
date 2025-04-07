@@ -105,6 +105,10 @@
       align-items: center;
       flex: 1;
     }
+    /* Limit the width of the Full Name input field */
+    .checkout-form input#name {
+      max-width: 250px;
+    }
     .checkout-form input {
       flex: 1;
       padding: 8px;
@@ -205,8 +209,8 @@
         <div class="checkout-form">
           <div class="form-row">
             <div class="input-group">
-              <label for="name">Name:</label>
-              <input id="name" type="text" v-model="name" placeholder="Your name" @input="validateName">
+              <label for="name">Full Name:</label>
+              <input id="name" type="text" v-model="name" placeholder="Your full name" @input="validateName">
             </div>
             <span v-if="nameError" class="error">{{ nameError }}</span>
           </div>
@@ -334,7 +338,6 @@
         } else {
           this.cart.push({ ...lesson, quantity: 1 });
         }
-        // Compute new available spaces and update backend
         const newSpaces = lesson.spaces - 1;
         try {
           const res = await fetch(`${API_BASE}/lessons/${lesson._id}`, {
@@ -348,7 +351,6 @@
           this.orderError = 'Failed to add to cart';
         }
         this.saveCart();
-        // Refresh lessons to sync available spaces
         this.fetchLessons();
       },
       async incrementCartItem(productId) {
