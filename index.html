@@ -88,12 +88,21 @@
       border-radius: 4px;
       border: 1px solid #ddd;
     }
-    /* Checkout form layout with name and phone side-by-side */
+    /* Checkout form layout with labels beside inputs */
     .checkout-form .form-row {
       display: flex;
       gap: 15px;
       flex-wrap: wrap;
+      align-items: center;
       margin-bottom: 15px;
+    }
+    .checkout-form label {
+      margin-right: 5px;
+      font-weight: bold;
+    }
+    .checkout-form .input-group {
+      display: flex;
+      align-items: center;
     }
     .checkout-form input {
       flex: 1;
@@ -191,14 +200,18 @@
         <h3>Checkout</h3>
         <div class="checkout-form">
           <div class="form-row">
-            <div>
-              <input type="text" v-model="name" placeholder="Your name" @input="validateName">
-              <span v-if="nameError" class="error">{{ nameError }}</span>
+            <div class="input-group">
+              <label for="name">Name:</label>
+              <input id="name" type="text" v-model="name" placeholder="Your name" @input="validateName">
             </div>
-            <div>
-              <input type="tel" v-model="phone" placeholder="Your phone number" @input="validatePhone">
-              <span v-if="phoneError" class="error">{{ phoneError }}</span>
+            <span v-if="nameError" class="error">{{ nameError }}</span>
+          </div>
+          <div class="form-row">
+            <div class="input-group">
+              <label for="phone">Phone:</label>
+              <input id="phone" type="tel" v-model="phone" placeholder="Your phone number" @input="validatePhone">
             </div>
+            <span v-if="phoneError" class="error">{{ phoneError }}</span>
           </div>
           <button :disabled="!isCheckoutValid || submitting" @click="submitOrder">
             {{ submitting ? 'Processing...' : 'Submit Order' }}
@@ -310,49 +323,48 @@
         this.fetchLessons();
       },
       async addToCart(lesson) {
+        if (lesson.spaces <= 0) return;
         const cartItem = this.cart.find(item => item._id === lesson._id);
-        if (lesson.spaces > 0) {
-          if (cartItem) {
-            cartItem.quantity++;
-          } else {
-            this.cart.push({ ...lesson, quantity: 1 });
-          }
-          lesson.spaces--;
-          this.saveCart();
-          try {
-            const res = await fetch(`${API_BASE}/lessons/${lesson._id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ spaces: lesson.spaces })
-            });
-            const updatedLesson = await res.json();
-            Object.assign(lesson, updatedLesson);
-          } catch (err) {
-            this.orderError = 'Failed to add to cart';
-          }
+        if (cartItem) {
+          cartItem.quantity++;
+        } else {
+          this.cart.push({ ...lesson, quantity: 1 });
         }
+        // Compute new spaces without modifying the local lesson immediately
+        const newSpaces = lesson.spaces - 1;
+        try {
+          const res = await fetch(`${API_BASE}/lessons/${lesson._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ spaces: newSpaces })
+          });
+          const updatedLesson = await res.json();
+          Object.assign(lesson, updatedLesson);
+        } catch (err) {
+          this.orderError = 'Failed to add to cart';
+        }
+        this.saveCart();
       },
       async incrementCartItem(productId) {
         const idStr = productId.toString();
         const cartItem = this.cart.find(item => item._id === idStr);
         if (!cartItem) return;
         const lesson = this.lessons.find(l => l._id === idStr);
-        if (!lesson) return;
-        if (lesson.spaces <= 0) return;
-        cartItem.quantity++;
-        lesson.spaces--;
-        this.saveCart();
+        if (!lesson || lesson.spaces <= 0) return;
+        const newSpaces = lesson.spaces - 1;
         try {
+          cartItem.quantity++;
           const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ spaces: lesson.spaces })
+            body: JSON.stringify({ spaces: newSpaces })
           });
           const updatedLesson = await res.json();
           Object.assign(lesson, updatedLesson);
         } catch (err) {
           this.orderError = 'Failed to update cart on increment';
         }
+        this.saveCart();
       },
       async decrementCartItem(productId) {
         const idStr = productId.toString();
@@ -361,14 +373,13 @@
         const lesson = this.lessons.find(l => l._id === idStr);
         if (!lesson) return;
         if (cartItem.quantity > 1) {
-          cartItem.quantity--;
-          lesson.spaces++;
-          this.saveCart();
+          const newSpaces = lesson.spaces + 1;
           try {
+            cartItem.quantity--;
             const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ spaces: lesson.spaces })
+              body: JSON.stringify({ spaces: newSpaces })
             });
             const updatedLesson = await res.json();
             Object.assign(lesson, updatedLesson);
@@ -378,18 +389,19 @@
         } else {
           this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
         }
+        this.saveCart();
       },
       async removeCartItem(index) {
         const cartItem = this.cart[index];
         const idStr = cartItem._id.toString();
         const lesson = this.lessons.find(l => l._id === idStr);
         if (lesson) {
-          lesson.spaces += cartItem.quantity;
+          const newSpaces = lesson.spaces + cartItem.quantity;
           try {
             const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ spaces: lesson.spaces })
+              body: JSON.stringify({ spaces: newSpaces })
             });
             const updatedLesson = await res.json();
             Object.assign(lesson, updatedLesson);
@@ -439,6 +451,7 @@
           this.name = '';
           this.phone = '';
           this.orderSuccess = true;
+          // Pop-up to confirm successful order submission
           alert("Order submitted successfully!");
           setTimeout(() => this.orderSuccess = false, 3000);
         } catch (err) {
