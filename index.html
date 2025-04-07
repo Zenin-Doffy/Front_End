@@ -8,19 +8,96 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
   <style>
-    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-    button:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.6; }
-    .lesson-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-    .lesson { border: 1px solid #ddd; padding: 15px; border-radius: 5px; text-align: center; transition: transform 0.2s; }
-    .lesson:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    .cart-button { position: fixed; top: 20px; right: 20px; background: #42b983; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-    .error { color: red; font-size: 0.8em; }
-    .success-message { color: green; padding: 10px; background: #e8f5e9; border-radius: 4px; margin: 10px 0; }
-    .cart-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #eee; }
-    .search-container, .sort-container { margin-bottom: 20px; display: flex; gap: 10px; }
-    input, select { padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
-    .quantity-controls button { margin: 0 5px; padding: 5px 10px; }
-    .checkout-form input { margin-bottom: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .lesson-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .lesson {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .lesson:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .cart-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #42b983;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      font-size: 0.8em;
+    }
+    .success-message {
+      color: green;
+      padding: 10px;
+      background: #e8f5e9;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    /* Cart item styling for checkout page */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .cart-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .quantity-controls button {
+      margin: 0 5px;
+      padding: 5px 10px;
+    }
+    .search-container,
+    .sort-container {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    input,
+    select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    /* Checkout form layout with name and phone side-by-side */
+    .checkout-form .form-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    .checkout-form input {
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -89,10 +166,15 @@
         <p>Your cart is empty</p>
       </div>
       <div v-else>
-        <!-- Display cart items with quantity controls -->
+        <!-- Display cart items with image and quantity controls -->
         <div v-for="(item, index) in cart" :key="item._id" class="cart-item">
-          <div>
+          <!-- Display lesson image if available -->
+          <div v-if="item.image">
+            <img :src="getImageUrl(item.image)" alt="Lesson image" @error="handleImageError">
+          </div>
+          <div style="flex: 1;">
             <strong>{{ item.subject }}</strong> - £{{ item.price }}
+            <p>Spaces remaining: {{ lessons.find(l => l._id === item._id)?.spaces || 'N/A' }}</p>
           </div>
           <div class="quantity-controls">
             <button @click="decrementCartItem(item._id)">-</button>
@@ -108,13 +190,15 @@
         <!-- Checkout Form -->
         <h3>Checkout</h3>
         <div class="checkout-form">
-          <div style="margin-bottom: 15px;">
-            <input type="text" v-model="name" placeholder="Your name" @input="validateName">
-            <span v-if="nameError" class="error">{{ nameError }}</span>
-          </div>
-          <div style="margin-bottom: 15px;">
-            <input type="tel" v-model="phone" placeholder="Your phone number" @input="validatePhone">
-            <span v-if="phoneError" class="error">{{ phoneError }}</span>
+          <div class="form-row">
+            <div>
+              <input type="text" v-model="name" placeholder="Your name" @input="validateName">
+              <span v-if="nameError" class="error">{{ nameError }}</span>
+            </div>
+            <div>
+              <input type="tel" v-model="phone" placeholder="Your phone number" @input="validatePhone">
+              <span v-if="phoneError" class="error">{{ phoneError }}</span>
+            </div>
           </div>
           <button :disabled="!isCheckoutValid || submitting" @click="submitOrder">
             {{ submitting ? 'Processing...' : 'Submit Order' }}
@@ -332,7 +416,6 @@
         this.orderError = '';
         this.orderSuccess = false;
       },
-      // Updated submitOrder method with a pop-up on successful order submission
       async submitOrder() {
         this.submitting = true;
         try {
@@ -356,7 +439,6 @@
           this.name = '';
           this.phone = '';
           this.orderSuccess = true;
-          // Pop-up to confirm successful order submission
           alert("Order submitted successfully!");
           setTimeout(() => this.orderSuccess = false, 3000);
         } catch (err) {
