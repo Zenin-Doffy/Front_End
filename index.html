@@ -91,21 +91,25 @@
     /* Checkout form layout with labels beside inputs */
     .checkout-form .form-row {
       display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
       align-items: center;
+      gap: 15px;
       margin-bottom: 15px;
     }
     .checkout-form label {
-      margin-right: 5px;
       font-weight: bold;
+      margin-right: 5px;
+      white-space: nowrap;
     }
     .checkout-form .input-group {
       display: flex;
       align-items: center;
+      flex: 1;
     }
     .checkout-form input {
       flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
   </style>
 </head>
@@ -330,7 +334,7 @@
         } else {
           this.cart.push({ ...lesson, quantity: 1 });
         }
-        // Compute new spaces without modifying the local lesson immediately
+        // Compute new available spaces and update backend
         const newSpaces = lesson.spaces - 1;
         try {
           const res = await fetch(`${API_BASE}/lessons/${lesson._id}`, {
@@ -344,6 +348,8 @@
           this.orderError = 'Failed to add to cart';
         }
         this.saveCart();
+        // Refresh lessons to sync available spaces
+        this.fetchLessons();
       },
       async incrementCartItem(productId) {
         const idStr = productId.toString();
@@ -365,6 +371,7 @@
           this.orderError = 'Failed to update cart on increment';
         }
         this.saveCart();
+        this.fetchLessons();
       },
       async decrementCartItem(productId) {
         const idStr = productId.toString();
@@ -387,9 +394,10 @@
             this.orderError = 'Failed to update cart on decrement';
           }
         } else {
-          this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
+          await this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
         }
         this.saveCart();
+        this.fetchLessons();
       },
       async removeCartItem(index) {
         const cartItem = this.cart[index];
@@ -411,6 +419,7 @@
         }
         this.cart.splice(index, 1);
         this.saveCart();
+        this.fetchLessons();
       },
       validateName() {
         this.nameError = /^[A-Za-z\s'-]{2,}$/.test(this.name.trim()) 
@@ -451,7 +460,6 @@
           this.name = '';
           this.phone = '';
           this.orderSuccess = true;
-          // Pop-up to confirm successful order submission
           alert("Order submitted successfully!");
           setTimeout(() => this.orderSuccess = false, 3000);
         } catch (err) {
