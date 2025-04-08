@@ -39,6 +39,8 @@ button:disabled {
 .error {
   color: red;
   font-size: 0.8em;
+  margin-top: 5px;
+  display: block;
 }
 .success-message {
   color: green;
@@ -47,7 +49,6 @@ button:disabled {
   border-radius: 4px;
   margin: 10px 0;
 }
-/* Cart item styling for checkout page */
 .cart-item {
   display: flex;
   align-items: center;
@@ -78,7 +79,6 @@ select {
   border-radius: 4px;
   border: 1px solid #ddd;
 }
-/* Checkout form layout with labels beside inputs */
 .checkout-form .form-row {
   display: flex;
   align-items: center;
@@ -90,16 +90,14 @@ select {
   margin-right: 5px;
   white-space: nowrap;
 }
-
 .checkout-form input#phone {
-max-width: 200px;
+  max-width: 200px;
 }
 .checkout-form .input-group {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   flex: 1;
 }
-
 .checkout-form input#name {
   max-width: 200px;
 }
@@ -108,4 +106,29 @@ max-width: 200px;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+/* Order Popup Styling */
+.order-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #e8f5e9;
+  padding: 20px;
+  border: 2px solid #42b983;
+  border-radius: 5px;
+  text-align: center;
+  z-index: 1000;
+}
+.order-popup p {
+  margin-bottom: 15px;
+}
+.order-popup button {
+  padding: 5px 10px;
+  background: #42b983;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
 }
