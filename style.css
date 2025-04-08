@@ -43,12 +43,6 @@ button:disabled {
 }
 
 .error {
-  background-color: #ffe6e6;
-  color: #d32f2f;
-  padding: 8px 10px;
-  margin-top: 8px;
-  border: 1px solid #d32f2f;
-  border-radius: 4px;
   font-size: 0.9em;
 }
 
@@ -96,58 +90,68 @@ select {
   border: 1px solid #ddd;
 }
 
-/* ------------- */
-/* Checkout Form */
-/* ------------- */
+/* ----------------------------------------- */
+/* Unique Checkout Form Styling (Left-aligned) */
+/* ----------------------------------------- */
 .checkout-form {
-  background-color: #f9f9f9;
-  padding: 20px;
-  border: 1px solid #e2e2e2;
-  border-radius: 6px;
-  max-width: 500px;
-  margin: 20px auto;
+  background: linear-gradient(to right, #fffbea, #fff2d1);
+  padding: 25px;
+  border: 2px dashed #f4a261;
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 20px 0 0 0; /* left aligned */
+  box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
 }
 
 .checkout-form .form-row {
+  display: flex;
+  flex-direction: column;
   margin-bottom: 20px;
 }
 
 .checkout-form label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 5px;
+  font-weight: 700;
+  margin-bottom: 8px;
   color: #333;
+  font-size: 16px;
 }
 
 .checkout-form input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #dcdcdc;
+  padding: 12px;
+  border: 1px solid #e6d8b3;
   border-radius: 4px;
-  font-size: 16px;
-  box-sizing: border-box;
+  font-size: 15px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .checkout-form input:focus {
   outline: none;
-  border-color: #42b983;
-  box-shadow: 0 0 5px rgba(66, 185, 131, 0.5);
+  border-color: #f4a261;
+  box-shadow: 0 0 6px rgba(244, 162, 97, 0.5);
+}
+
+.checkout-form .error {
+  background-color: #fef0e0;
+  border: 1px solid #f4a261;
+  color: #d35400;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 4px;
 }
 
 .checkout-form button {
-  background-color: #42b983;
+  background-color: #f4a261;
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 14px 20px;
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
-  display: block;
-  width: 100%;
   transition: background-color 0.3s ease;
+  width: auto;
+  margin-top: 10px;
 }
 
 .checkout-form button:hover:not(:disabled) {
-  background-color: #369870;
+  background-color: #e6954d;
 }
