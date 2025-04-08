@@ -109,3 +109,30 @@ max-width: 200px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
+
+/* New CSS for inline error messages */
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Adjust spacing as needed */
+}
+
+.input-group {
+  flex: 1; /* Takes full width minus error message */
+  display: flex;
+  flex-direction: column;
+}
+
+.error-inline {
+  margin-left: 10px; /* Space between the input group and error message */
+  color: red;
+  white-space: nowrap; /* Prevents wrapping */
+  font-size: 0.9em;
+}
+
+/* Optionally override existing error styles if needed */
+.error {
+  color: red;
+  font-size: 0.9em;
+
+}
