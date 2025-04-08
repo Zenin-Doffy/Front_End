@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>After-School Classes</title>
+  <!-- Use Vue.js 2.x -->
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <!-- Font Awesome for icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css">
 </head>
@@ -15,6 +17,7 @@
       <i class="fas fa-shopping-cart"></i> ({{ cart.length }})
     </button>
 
+    <!-- Lessons Page -->
     <div v-if="!showCart">
       <div class="search-container">
         <input v-model="searchQuery" placeholder="Search lessons..." @input="debouncedSearch" />
@@ -58,6 +61,7 @@
       </div>
     </div>
 
+    <!-- Shopping Cart Page -->
     <div v-if="showCart">
       <h2>Your Shopping Cart</h2>
       <button @click="toggleCart"><i class="fas fa-arrow-left"></i> Back to Lessons</button>
@@ -116,8 +120,9 @@
       </div>
     </div>
   </div>
-  
+
   <script>
+    // Change API_BASE to match your deployed back end (e.g., AWS/Render URL)
     const API_BASE = 'https://backend-aba7.onrender.com';
     
     new Vue({
@@ -168,13 +173,16 @@
         }
       },
       methods: {
+        // Compose URL for lesson images.
         getImageUrl(image) {
           return image ? `${API_BASE}/images/${image}` : '';
         },
+        // Fallback image for error events.
         handleImageError(event) {
           event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
           event.target.style.display = 'none';
         },
+        // Fetch all lessons from the back end
         async fetchLessons() {
           try {
             const page = 1;
@@ -191,12 +199,14 @@
             this.loading = false;
           }
         },
+        // Debounce search to avoid many rapid calls
         debouncedSearch() {
           clearTimeout(this.debounceTimer);
           this.debounceTimer = setTimeout(() => {
             this.fetchSearchResults();
           }, 300);
         },
+        // Search API call
         async fetchSearchResults() {
           if (!this.searchQuery.trim()) {
             this.fetchLessons();
@@ -217,6 +227,7 @@
           this.searchQuery = '';
           this.fetchLessons();
         },
+        // Add lesson to the shopping cart, reducing available spaces.
         async addToCart(lesson) {
           if (lesson.spaces <= 0) return;
           const cartItem = this.cart.find(item => item._id === lesson._id);
@@ -240,6 +251,7 @@
           this.saveCart();
           this.fetchLessons();
         },
+        // Increment quantity of an item in the cart.
         async incrementCartItem(productId) {
           const idStr = productId.toString();
           const cartItem = this.cart.find(item => item._id === idStr);
@@ -262,6 +274,7 @@
           this.saveCart();
           this.fetchLessons();
         },
+        // Decrement quantity of a cart item or remove it if quantity reaches zero.
         async decrementCartItem(productId) {
           const idStr = productId.toString();
           const cartItem = this.cart.find(item => item._id === idStr);
@@ -288,6 +301,7 @@
           this.saveCart();
           this.fetchLessons();
         },
+        // Remove an item from the cart (restores its available spaces).
         async removeCartItem(index) {
           const cartItem = this.cart[index];
           const idStr = cartItem._id.toString();
@@ -310,21 +324,21 @@
           this.saveCart();
           this.fetchLessons();
         },
+        // Validate name input (letters only; min. 2 characters)
         validateName() {
-          this.nameError = /^[A-Za-z\s'-]{2,}$/.test(this.name.trim()) 
-            ? '' 
-            : 'Invalid name format';
+          this.nameError = /^[A-Za-z\s'-]{2,}$/.test(this.name.trim()) ? '' : 'Invalid name format';
         },
+        // Validate phone input (numbers only; min. 8 digits)
         validatePhone() {
           const digits = this.phone.replace(/\D/g, '');
-          this.phoneError = digits.length >= 8 
-            ? '' 
-            : 'At least 8 digits required';
+          this.phoneError = digits.length >= 8 ? '' : 'At least 8 digits required';
         },
+        // Toggle between lessons and cart views.
         toggleCart() {
           this.showCart = !this.showCart;
           this.orderError = '';
         },
+        // Submit an order via POST to /orders; clear cart and show popup confirmation.
         async submitOrder() {
           this.submitting = true;
           try {
@@ -358,9 +372,11 @@
         closePopup() {
           this.orderPopup = false;
         },
+        // Save cart state to localStorage.
         saveCart() {
           localStorage.setItem('cart', JSON.stringify(this.cart));
         },
+        // Load cart state from localStorage.
         loadCart() {
           this.cart = JSON.parse(localStorage.getItem('cart')) || [];
         }
