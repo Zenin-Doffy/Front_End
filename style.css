@@ -42,7 +42,7 @@ button:disabled {
   cursor: pointer;
 }
 
-/* Basic styling for error and success messages */
+/* Basic error and success message styling */
 .error-message {
   margin-left: 10px;
   color: red;
@@ -108,13 +108,13 @@ select {
 }
 
 .form-row label {
-  width: 100px; /* Fixed width to align inputs uniformly */
+  width: 100px; /* Fixed width for uniformity */
   margin-right: 10px;
   text-align: right;
 }
 
 .form-row input {
-  flex: 1;
+  width: 150px; /* Reduced size as per requirements */
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
