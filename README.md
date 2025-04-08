@@ -16,4 +16,8 @@ Link to the website: https://zenin-doffy.github.io/Front_End/
 
 Link to the render.com route: https://backend-aba7.onrender.com
 
+Link to the render Lessons: https://backend-aba7.onrender.com/lessons
+
+Link to the render Orders: https://backend-aba7.onrender.com/orders
+
 
