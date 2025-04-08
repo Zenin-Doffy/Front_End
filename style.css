@@ -109,29 +109,3 @@ max-width: 200px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
-
-/* New CSS for inline error messages */
-.form-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px; /* Adjust spacing as needed */
-}
-
-.error-inline {
-  margin-left: 10px; /* Space between the input group and error message */
-  color: red;
-  white-space: nowrap; /* Prevents wrapping */
-  font-size: 0.9em;
-}
-
-.error {
-  color: red;
-  font-size: 0.9em;
-
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  width: 300px; /* adjust width as needed so input box and label remain close */
-}
