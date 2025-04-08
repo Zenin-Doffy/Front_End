@@ -7,8 +7,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="style.css">
-
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app">
@@ -42,9 +41,7 @@
           <p>No lessons found.</p>
         </div>
         <div v-else class="lesson-container">
-          
           <div v-for="lesson in sortedLessons" :key="lesson._id" class="lesson">
-
             <div v-if="lesson.image">
               <img :src="getImageUrl(lesson.image)" alt="Lesson image" 
                    style="width:100%; height:150px; object-fit:cover; margin-bottom:10px;"
@@ -73,9 +70,7 @@
         <p>Your cart is empty</p>
       </div>
       <div v-else>
-      
         <div v-for="(item, index) in cart" :key="item._id" class="cart-item">
-          
           <div v-if="item.image">
             <img :src="getImageUrl(item.image)" alt="Lesson image" @error="handleImageError">
           </div>
@@ -97,17 +92,13 @@
         <h3>Checkout</h3>
         <div class="checkout-form">
           <div class="form-row">
-            <div class="input-group">
-              <label for="name">Full Name:</label>
-              <input id="name" type="text" v-model="name" placeholder="Your full name" @input="validateName">
-            </div>
+            <label for="name">Full Name:</label>
+            <input id="name" type="text" v-model="name" placeholder="Your full name" @input="validateName">
             <span v-if="nameError" class="error">{{ nameError }}</span>
           </div>
           <div class="form-row">
-            <div class="input-group">
-              <label for="phone">Phone:</label>
-              <input id="phone" type="tel" v-model="phone" placeholder="Your phone number" @input="validatePhone">
-            </div>
+            <label for="phone">Phone:</label>
+            <input id="phone" type="tel" v-model="phone" placeholder="Your phone number" @input="validatePhone">
             <span v-if="phoneError" class="error">{{ phoneError }}</span>
           </div>
           <button :disabled="!isCheckoutValid || submitting" @click="submitOrder">
@@ -119,162 +110,118 @@
       </div>
     </div>
   </div>
- <script>
-  const API_BASE = 'https://backend-aba7.onrender.com';
-  
-  new Vue({
-    el: '#app',
-    data: {
-      lessons: [],
-      cart: [],
-      searchQuery: '',
-      sortBy: 'subject',
-      sortOrder: 'asc',
-      showCart: false,
-      loading: true,
-      name: '',
-      phone: '',
-      nameError: '',
-      phoneError: '',
-      orderSuccess: false,
-      orderError: '',
-      submitting: false,
-      debounceTimer: null
-    },
-    computed: {
-      sortedLessons() {
-        return [...this.lessons].sort((a, b) => {
-          const modifier = this.sortOrder === 'asc' ? 1 : -1;
-          let valA = a[this.sortBy];
-          let valB = b[this.sortBy];
-          if (this.sortBy === 'price' || this.sortBy === 'spaces') {
-            valA = Number(valA);
-            valB = Number(valB);
-          } else {
-            valA = valA.toString().toLowerCase();
-            valB = valB.toString().toLowerCase();
-          }
-          if (valA > valB) return 1 * modifier;
-          if (valA < valB) return -1 * modifier;
-          return 0;
-        });
+
+  <script>
+    const API_BASE = 'https://backend-aba7.onrender.com';
+    
+    new Vue({
+      el: '#app',
+      data: {
+        lessons: [],
+        cart: [],
+        searchQuery: '',
+        sortBy: 'subject',
+        sortOrder: 'asc',
+        showCart: false,
+        loading: true,
+        name: '',
+        phone: '',
+        nameError: '',
+        phoneError: '',
+        orderSuccess: false,
+        orderError: '',
+        submitting: false,
+        debounceTimer: null
       },
-      cartTotal() {
-        return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
-      },
-      isCheckoutValid() {
-        return this.name.trim().length >= 2 && 
-               /^[A-Za-z\s'-]+$/.test(this.name.trim()) &&
-               /^\d+$/.test(this.phone.replace(/\D/g, '')) && 
-               this.phone.replace(/\D/g, '').length >= 8;
-      }
-    },
-    methods: {
-      getImageUrl(image) {
-        return image ? `${API_BASE}/images/${image}` : '';
-      },
-      handleImageError(event) {
-        event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-        event.target.style.display = 'none';
-      },
-      async fetchLessons() {
-        try {
-          const page = 1;
-          const limit = 100;
-          const res = await fetch(`${API_BASE}/lessons?page=${page}&limit=${limit}`);
-          let data = await res.json();
-          this.lessons = data.map(lesson => ({
-            ...lesson,
-            _id: lesson._id.toString()
-          }));
-        } catch (err) {
-          this.orderError = 'Failed to load lessons';
-        } finally {
-          this.loading = false;
+      computed: {
+        sortedLessons() {
+          return [...this.lessons].sort((a, b) => {
+            const modifier = this.sortOrder === 'asc' ? 1 : -1;
+            let valA = a[this.sortBy];
+            let valB = b[this.sortBy];
+            if (this.sortBy === 'price' || this.sortBy === 'spaces') {
+              valA = Number(valA);
+              valB = Number(valB);
+            } else {
+              valA = valA.toString().toLowerCase();
+              valB = valB.toString().toLowerCase();
+            }
+            if (valA > valB) return 1 * modifier;
+            if (valA < valB) return -1 * modifier;
+            return 0;
+          });
+        },
+        cartTotal() {
+          return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+        },
+        isCheckoutValid() {
+          return this.name.trim().length >= 2 && 
+                 /^[A-Za-z\s'-]+$/.test(this.name.trim()) &&
+                 /^\d+$/.test(this.phone.replace(/\D/g, '')) && 
+                 this.phone.replace(/\D/g, '').length >= 8;
         }
       },
-      debouncedSearch() {
-        clearTimeout(this.debounceTimer);
-        this.debounceTimer = setTimeout(() => {
-          this.fetchSearchResults();
-        }, 300);
-      },
-      async fetchSearchResults() {
-        if (!this.searchQuery.trim()) {
+      methods: {
+        getImageUrl(image) {
+          return image ? `${API_BASE}/images/${image}` : '';
+        },
+        handleImageError(event) {
+          event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+          event.target.style.display = 'none';
+        },
+        async fetchLessons() {
+          try {
+            const page = 1;
+            const limit = 100;
+            const res = await fetch(`${API_BASE}/lessons?page=${page}&limit=${limit}`);
+            let data = await res.json();
+            this.lessons = data.map(lesson => ({
+              ...lesson,
+              _id: lesson._id.toString()
+            }));
+          } catch (err) {
+            this.orderError = 'Failed to load lessons';
+          } finally {
+            this.loading = false;
+          }
+        },
+        debouncedSearch() {
+          clearTimeout(this.debounceTimer);
+          this.debounceTimer = setTimeout(() => {
+            this.fetchSearchResults();
+          }, 300);
+        },
+        async fetchSearchResults() {
+          if (!this.searchQuery.trim()) {
+            this.fetchLessons();
+            return;
+          }
+          try {
+            const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(this.searchQuery)}`);
+            let data = await res.json();
+            this.lessons = data.map(lesson => ({
+              ...lesson,
+              _id: lesson._id.toString()
+            }));
+          } catch (err) {
+            this.orderError = 'Search failed';
+          }
+        },
+        clearSearch() {
+          this.searchQuery = '';
           this.fetchLessons();
-          return;
-        }
-        try {
-          const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(this.searchQuery)}`);
-          let data = await res.json();
-          this.lessons = data.map(lesson => ({
-            ...lesson,
-            _id: lesson._id.toString()
-          }));
-        } catch (err) {
-          this.orderError = 'Search failed';
-        }
-      },
-      clearSearch() {
-        this.searchQuery = '';
-        this.fetchLessons();
-      },
-      async addToCart(lesson) {
-        if (lesson.spaces <= 0) return;
-        const cartItem = this.cart.find(item => item._id === lesson._id);
-        if (cartItem) {
-          cartItem.quantity++;
-        } else {
-          this.cart.push({ ...lesson, quantity: 1 });
-        }
-        const newSpaces = lesson.spaces - 1;
-        try {
-          const res = await fetch(`${API_BASE}/lessons/${lesson._id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ spaces: newSpaces })
-          });
-          const updatedLesson = await res.json();
-          Object.assign(lesson, updatedLesson);
-        } catch (err) {
-          this.orderError = 'Failed to add to cart';
-        }
-        this.saveCart();
-        this.fetchLessons();
-      },
-      async incrementCartItem(productId) {
-        const idStr = productId.toString();
-        const cartItem = this.cart.find(item => item._id === idStr);
-        if (!cartItem) return;
-        const lesson = this.lessons.find(l => l._id === idStr);
-        if (!lesson || lesson.spaces <= 0) return;
-        const newSpaces = lesson.spaces - 1;
-        try {
-          cartItem.quantity++;
-          const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ spaces: newSpaces })
-          });
-          const updatedLesson = await res.json();
-          Object.assign(lesson, updatedLesson);
-        } catch (err) {
-          this.orderError = 'Failed to update cart on increment';
-        }
-        this.saveCart();
-        this.fetchLessons();
-      },
-      async decrementCartItem(productId) {
-        const idStr = productId.toString();
-        const cartItem = this.cart.find(item => item._id === idStr);
-        if (!cartItem) return;
-        const lesson = this.lessons.find(l => l._id === idStr);
-        if (!lesson) return;
-        if (cartItem.quantity > 1) {
-          const newSpaces = lesson.spaces + 1;
+        },
+        async addToCart(lesson) {
+          if (lesson.spaces <= 0) return;
+          const cartItem = this.cart.find(item => item._id === lesson._id);
+          if (cartItem) {
+            cartItem.quantity++;
+          } else {
+            this.cart.push({ ...lesson, quantity: 1 });
+          }
+          const newSpaces = lesson.spaces - 1;
           try {
-            cartItem.quantity--;
-            const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
+            const res = await fetch(`${API_BASE}/lessons/${lesson._id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ spaces: newSpaces })
@@ -282,96 +229,141 @@
             const updatedLesson = await res.json();
             Object.assign(lesson, updatedLesson);
           } catch (err) {
-            this.orderError = 'Failed to update cart on decrement';
+            this.orderError = 'Failed to add to cart';
           }
-        } else {
-          await this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
-        }
-        this.saveCart();
-        this.fetchLessons();
-      },
-      async removeCartItem(index) {
-        const cartItem = this.cart[index];
-        const idStr = cartItem._id.toString();
-        const lesson = this.lessons.find(l => l._id === idStr);
-        if (lesson) {
-          const newSpaces = lesson.spaces + cartItem.quantity;
-          try {
-            const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ spaces: newSpaces })
-            });
-            const updatedLesson = await res.json();
-            Object.assign(lesson, updatedLesson);
-          } catch (err) {
-            this.orderError = 'Failed to update lesson on removal';
-          }
-        }
-        this.cart.splice(index, 1);
-        this.saveCart();
-        this.fetchLessons();
-      },
-      validateName() {
-        this.nameError = /^[A-Za-z\s'-]{2,}$/.test(this.name.trim()) 
-          ? '' 
-          : 'Invalid name format';
-      },
-      validatePhone() {
-        const digits = this.phone.replace(/\D/g, '');
-        this.phoneError = digits.length >= 8 
-          ? '' 
-          : 'At least 8 digits required';
-      },
-      toggleCart() {
-        this.showCart = !this.showCart;
-        this.orderError = '';
-        this.orderSuccess = false;
-      },
-      async submitOrder() {
-        this.submitting = true;
-        try {
-          const orderItems = this.cart.map(item => ({
-            lessonId: item._id.toString(),
-            quantity: item.quantity
-          }));
-          const res = await fetch(`${API_BASE}/orders`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: this.name.trim(),
-              phone: this.phone.replace(/\D/g, ''),
-              lessons: orderItems
-            })
-          });
-          if (!res.ok) throw new Error('Order failed');
-          await res.json();
-          this.cart = [];
           this.saveCart();
-          this.name = '';
-          this.phone = '';
-          this.orderSuccess = true;
-          alert("Order submitted successfully!");
-          setTimeout(() => this.orderSuccess = false, 3000);
-        } catch (err) {
-          this.orderError = err.message;
-        } finally {
-          this.submitting = false;
+          this.fetchLessons();
+        },
+        async incrementCartItem(productId) {
+          const idStr = productId.toString();
+          const cartItem = this.cart.find(item => item._id === idStr);
+          if (!cartItem) return;
+          const lesson = this.lessons.find(l => l._id === idStr);
+          if (!lesson || lesson.spaces <= 0) return;
+          const newSpaces = lesson.spaces - 1;
+          try {
+            cartItem.quantity++;
+            const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ spaces: newSpaces })
+            });
+            const updatedLesson = await res.json();
+            Object.assign(lesson, updatedLesson);
+          } catch (err) {
+            this.orderError = 'Failed to update cart on increment';
+          }
+          this.saveCart();
+          this.fetchLessons();
+        },
+        async decrementCartItem(productId) {
+          const idStr = productId.toString();
+          const cartItem = this.cart.find(item => item._id === idStr);
+          if (!cartItem) return;
+          const lesson = this.lessons.find(l => l._id === idStr);
+          if (!lesson) return;
+          if (cartItem.quantity > 1) {
+            const newSpaces = lesson.spaces + 1;
+            try {
+              cartItem.quantity--;
+              const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ spaces: newSpaces })
+              });
+              const updatedLesson = await res.json();
+              Object.assign(lesson, updatedLesson);
+            } catch (err) {
+              this.orderError = 'Failed to update cart on decrement';
+            }
+          } else {
+            await this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
+          }
+          this.saveCart();
+          this.fetchLessons();
+        },
+        async removeCartItem(index) {
+          const cartItem = this.cart[index];
+          const idStr = cartItem._id.toString();
+          const lesson = this.lessons.find(l => l._id === idStr);
+          if (lesson) {
+            const newSpaces = lesson.spaces + cartItem.quantity;
+            try {
+              const res = await fetch(`${API_BASE}/lessons/${idStr}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ spaces: newSpaces })
+              });
+              const updatedLesson = await res.json();
+              Object.assign(lesson, updatedLesson);
+            } catch (err) {
+              this.orderError = 'Failed to update lesson on removal';
+            }
+          }
+          this.cart.splice(index, 1);
+          this.saveCart();
+          this.fetchLessons();
+        },
+        validateName() {
+          this.nameError = /^[A-Za-z\s'-]{2,}$/.test(this.name.trim()) 
+            ? '' 
+            : 'Invalid name format';
+        },
+        validatePhone() {
+          const digits = this.phone.replace(/\D/g, '');
+          this.phoneError = digits.length >= 8 
+            ? '' 
+            : 'At least 8 digits required';
+        },
+        toggleCart() {
+          this.showCart = !this.showCart;
+          this.orderError = '';
+          this.orderSuccess = false;
+        },
+        async submitOrder() {
+          this.submitting = true;
+          try {
+            const orderItems = this.cart.map(item => ({
+              lessonId: item._id.toString(),
+              quantity: item.quantity
+            }));
+            const res = await fetch(`${API_BASE}/orders`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: this.name.trim(),
+                phone: this.phone.replace(/\D/g, ''),
+                lessons: orderItems
+              })
+            });
+            if (!res.ok) throw new Error('Order failed');
+            await res.json();
+            this.cart = [];
+            this.saveCart();
+            this.name = '';
+            this.phone = '';
+            this.orderSuccess = true;
+            alert("Order submitted successfully!");
+            setTimeout(() => this.orderSuccess = false, 3000);
+          } catch (err) {
+            this.orderError = err.message;
+          } finally {
+            this.submitting = false;
+          }
+        },
+        saveCart() {
+          localStorage.setItem('cart', JSON.stringify(this.cart));
+        },
+        loadCart() {
+          this.cart = JSON.parse(localStorage.getItem('cart')) || [];
         }
       },
-      saveCart() {
-        localStorage.setItem('cart', JSON.stringify(this.cart));
-      },
-      loadCart() {
-        this.cart = JSON.parse(localStorage.getItem('cart')) || [];
+      created() {
+        this.fetchLessons();
+        this.loadCart();
       }
-    },
-    created() {
-      this.fetchLessons();
-      this.loadCart();
-    }
-  });
-</script>
+    });
+  </script>
 
 </body>
 </html>
