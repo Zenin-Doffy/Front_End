@@ -42,7 +42,10 @@ button:disabled {
   cursor: pointer;
 }
 
-.error {
+/* Basic styling for error and success messages */
+.error-message {
+  margin-left: 10px;
+  color: red;
   font-size: 0.9em;
 }
 
@@ -51,7 +54,7 @@ button:disabled {
   padding: 10px;
   background: #e8f5e9;
   border-radius: 4px;
-  margin: 10px 0;
+  margin-top: 10px;
 }
 
 /* Cart item styling for checkout page */
@@ -90,68 +93,29 @@ select {
   border: 1px solid #ddd;
 }
 
-/* ----------------------------------------- */
-/* Unique Checkout Form Styling (Left-aligned) */
-/* ----------------------------------------- */
+/* ------------------------------------- */
+/* Simple Horizontal Checkout Form     */
+/* ------------------------------------- */
 .checkout-form {
-  background: linear-gradient(to right, #fffbea, #fff2d1);
-  padding: 25px;
-  border: 2px dashed #f4a261;
-  border-radius: 8px;
-  max-width: 600px;
-  margin: 20px 0 0 0; /* left aligned */
-  box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+  padding: 10px;
+  margin-top: 20px;
 }
 
-.checkout-form .form-row {
+.form-row {
   display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-.checkout-form label {
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #333;
-  font-size: 16px;
+.form-row label {
+  width: 100px; /* Fixed width to align inputs uniformly */
+  margin-right: 10px;
+  text-align: right;
 }
 
-.checkout-form input {
-  padding: 12px;
-  border: 1px solid #e6d8b3;
+.form-row input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 15px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.checkout-form input:focus {
-  outline: none;
-  border-color: #f4a261;
-  box-shadow: 0 0 6px rgba(244, 162, 97, 0.5);
-}
-
-.checkout-form .error {
-  background-color: #fef0e0;
-  border: 1px solid #f4a261;
-  color: #d35400;
-  padding: 8px;
-  margin-top: 5px;
-  border-radius: 4px;
-}
-
-.checkout-form button {
-  background-color: #f4a261;
-  color: white;
-  border: none;
-  padding: 14px 20px;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: auto;
-  margin-top: 10px;
-}
-
-.checkout-form button:hover:not(:disabled) {
-  background-color: #e6954d;
 }

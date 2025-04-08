@@ -4,9 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>After-School Classes</title>
-
+  
+  <!-- Vue.js -->
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,6 +20,7 @@
       <i class="fas fa-shopping-cart"></i> ({{ cart.length }})
     </button>
 
+    <!-- Lesson List -->
     <div v-if="!showCart">
       <div class="search-container">
         <input v-model="searchQuery" placeholder="Search lessons..." @input="debouncedSearch" />
@@ -62,6 +66,7 @@
       </div>
     </div>
 
+    <!-- Shopping Cart and Checkout -->
     <div v-if="showCart">
       <h2>Your Shopping Cart</h2>
       <button @click="toggleCart"><i class="fas fa-arrow-left"></i> Back to Lessons</button>
@@ -90,28 +95,29 @@
         <h3>Total: £{{ cartTotal }}</h3>
 
         <h3>Checkout</h3>
-        <!-- Updated checkout form with unique, left-aligned styling -->
+        <!-- Simplified checkout form: label, input, and inline error message -->
         <div class="checkout-form">
           <div class="form-row">
-            <label for="name">Full Name:</label>
-            <input id="name" type="text" v-model="name" placeholder="Your full name" @input="validateName">
-            <span v-if="nameError" class="error">{{ nameError }}</span>
+            <label for="fullname">Fullname:</label>
+            <input id="fullname" type="text" v-model="fullname" placeholder="Enter full name" @input="validateFullname">
+            <span class="error-message" v-if="fullnameError">incorrect format</span>
           </div>
           <div class="form-row">
-            <label for="phone">Phone:</label>
-            <input id="phone" type="tel" v-model="phone" placeholder="Your phone number" @input="validatePhone">
-            <span v-if="phoneError" class="error">{{ phoneError }}</span>
+            <label for="number">Number:</label>
+            <input id="number" type="text" v-model="number" placeholder="Enter phone number" @input="validateNumber">
+            <span class="error-message" v-if="numberError">incorrect format</span>
           </div>
           <button :disabled="!isCheckoutValid || submitting" @click="submitOrder">
             {{ submitting ? 'Processing...' : 'Submit Order' }}
           </button>
           <div v-if="orderSuccess" class="success-message">Order submitted successfully!</div>
-          <div v-if="orderError" class="error">{{ orderError }}</div>
+          <div v-if="orderError" class="error-message">{{ orderError }}</div>
         </div>
       </div>
     </div>
   </div>
-  
+
+  <!-- Vue.js App Script -->
   <script>
     const API_BASE = 'https://backend-aba7.onrender.com';
     
@@ -125,10 +131,11 @@
         sortOrder: 'asc',
         showCart: false,
         loading: true,
-        name: '',
-        phone: '',
-        nameError: '',
-        phoneError: '',
+        // Using new variable names per instructions
+        fullname: '',
+        number: '',
+        fullnameError: false,
+        numberError: false,
         orderSuccess: false,
         orderError: '',
         submitting: false,
@@ -156,10 +163,12 @@
           return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
         },
         isCheckoutValid() {
-          return this.name.trim().length >= 2 && 
-                 /^[A-Za-z\s'-]+$/.test(this.name.trim()) &&
-                 /^\d+$/.test(this.phone.replace(/\D/g, '')) && 
-                 this.phone.replace(/\D/g, '').length >= 8;
+          return (
+            this.fullname.trim().length >= 2 &&
+            /^[A-Za-z\s]+$/.test(this.fullname.trim()) &&
+            /^\d+$/.test(this.number.trim()) &&
+            this.number.trim().length >= 8
+          );
         }
       },
       methods: {
@@ -167,7 +176,8 @@
           return image ? `${API_BASE}/images/${image}` : '';
         },
         handleImageError(event) {
-          event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+          event.target.src =
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
           event.target.style.display = 'none';
         },
         async fetchLessons() {
@@ -232,7 +242,7 @@
           } catch (err) {
             this.orderError = 'Failed to add to cart';
           }
-          this.saveCart();
+          localStorage.setItem('cart', JSON.stringify(this.cart));
           this.fetchLessons();
         },
         async incrementCartItem(productId) {
@@ -254,7 +264,7 @@
           } catch (err) {
             this.orderError = 'Failed to update cart on increment';
           }
-          this.saveCart();
+          localStorage.setItem('cart', JSON.stringify(this.cart));
           this.fetchLessons();
         },
         async decrementCartItem(productId) {
@@ -280,7 +290,7 @@
           } else {
             await this.removeCartItem(this.cart.findIndex(item => item._id === idStr));
           }
-          this.saveCart();
+          localStorage.setItem('cart', JSON.stringify(this.cart));
           this.fetchLessons();
         },
         async removeCartItem(index) {
@@ -302,19 +312,14 @@
             }
           }
           this.cart.splice(index, 1);
-          this.saveCart();
+          localStorage.setItem('cart', JSON.stringify(this.cart));
           this.fetchLessons();
         },
-        validateName() {
-          this.nameError = /^[A-Za-z\s'-]{2,}$/.test(this.name.trim()) 
-            ? '' 
-            : 'Invalid name format';
+        validateFullname() {
+          this.fullnameError = !/^[A-Za-z\s]+$/.test(this.fullname.trim());
         },
-        validatePhone() {
-          const digits = this.phone.replace(/\D/g, '');
-          this.phoneError = digits.length >= 8 
-            ? '' 
-            : 'At least 8 digits required';
+        validateNumber() {
+          this.numberError = !/^\d+$/.test(this.number.trim()) || this.number.trim().length < 8;
         },
         toggleCart() {
           this.showCart = !this.showCart;
@@ -332,18 +337,19 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                name: this.name.trim(),
-                phone: this.phone.replace(/\D/g, ''),
+                name: this.fullname.trim(),
+                phone: this.number.trim(),
                 lessons: orderItems
               })
             });
             if (!res.ok) throw new Error('Order failed');
             await res.json();
             this.cart = [];
-            this.saveCart();
-            this.name = '';
-            this.phone = '';
+            localStorage.setItem('cart', JSON.stringify(this.cart));
+            this.fullname = '';
+            this.number = '';
             this.orderSuccess = true;
+            // Pop-up confirmation
             alert("Order submitted successfully!");
             setTimeout(() => this.orderSuccess = false, 3000);
           } catch (err) {
@@ -351,9 +357,6 @@
           } finally {
             this.submitting = false;
           }
-        },
-        saveCart() {
-          localStorage.setItem('cart', JSON.stringify(this.cart));
         },
         loadCart() {
           this.cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -365,6 +368,5 @@
       }
     });
   </script>
-
 </body>
 </html>
