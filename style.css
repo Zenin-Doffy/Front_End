@@ -93,9 +93,6 @@ select {
   border: 1px solid #ddd;
 }
 
-/* ------------------------------------- */
-/* Simple Horizontal Checkout Form     */
-/* ------------------------------------- */
 .checkout-form {
   padding: 10px;
   margin-top: 20px;
@@ -113,8 +110,14 @@ select {
   text-align: right;
 }
 
+/* New container to keep the input and error message inline */
+.input-container {
+  display: flex;
+  align-items: center;
+}
+
 .form-row input {
-  width: 150px; /* Reduced size as per requirements */
+  width: 100px; /* Reduced width from 150px to 100px */
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;

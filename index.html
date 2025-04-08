@@ -9,8 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
+  
 </head>
 <body>
   <div id="app">
@@ -99,13 +98,17 @@
         <div class="checkout-form">
           <div class="form-row">
             <label for="fullname">Fullname:</label>
-            <input id="fullname" type="text" v-model="fullname" placeholder="Enter full name" @input="validateFullname">
-            <span class="error-message" v-if="fullnameError">incorrect format</span>
+            <div class="input-container">
+              <input id="fullname" type="text" v-model="fullname" placeholder="Enter full name" @input="validateFullname">
+              <span class="error-message" v-if="fullnameError">incorrect format</span>
+            </div>
           </div>
           <div class="form-row">
             <label for="number">Number:</label>
-            <input id="number" type="text" v-model="number" placeholder="Enter phone number" @input="validateNumber">
-            <span class="error-message" v-if="numberError">incorrect format</span>
+            <div class="input-container">
+              <input id="number" type="text" v-model="number" placeholder="Enter phone number" @input="validateNumber">
+              <span class="error-message" v-if="numberError">incorrect format</span>
+            </div>
           </div>
           <button :disabled="!isCheckoutValid || submitting" @click="submitOrder">
             {{ submitting ? 'Processing...' : 'Submit Order' }}
@@ -116,7 +119,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Vue.js App Script -->
   <script>
     const API_BASE = 'https://backend-aba7.onrender.com';
