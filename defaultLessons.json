@@ -1,20 +1,20 @@
 {
   "lessons": [
     {
-      "subject": "Math",
+      "subject": "Swimming",
       "location": "Room 101",
       "price": 50,
       "spaces": 5,
       "icon": "fa-book",
-      "image": "http://localhost:3000/images/Math.jpg"
+      "image": "swimming.jpg"
     },
     {
-      "subject": "Science",
+      "subject": "Storytelling",
       "location": "Room 102",
       "price": 55,
       "spaces": 5,
       "icon": "fa-flask",
-      "image": "Science.jpg"
+      "image": "Storytelling.jpg"
     },
     {
       "subject": "Art",
@@ -25,12 +25,12 @@
       "image": "Art.jpg"
     },
     {
-      "subject": "History",
+      "subject": "Gymnastics",
       "location": "Room 104",
       "price": 45,
       "spaces": 5,
       "icon": "fa-landmark",
-      "image": "History.jpg"
+      "image": "gymnastics.jpg"
     },
     {
       "subject": "Music",
@@ -65,12 +65,12 @@
       "image": "Sports.jpg"
     },
     {
-      "subject": "Literature",
+      "subject": "Origami",
       "location": "Room 108",
       "price": 45,
       "spaces": 5,
       "icon": "fa-book-open",
-      "image": "Literature.jpg"
+      "image": "Origami.jpg.jpg"
     },
     {
       "subject": "Cooking",
